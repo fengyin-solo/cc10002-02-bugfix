@@ -72,8 +72,17 @@ npm run dev
 
 - 每个模块的前端页面在 `frontend/src/views/<模块>/index.vue`，后端接口在
   `backend/app/routers/<模块>.py`，业务规则在 `backend/app/services/<模块>.py`。
-- 列表接口统一返回 `{ items, total, page, size }`，动作接口统一返回 `{ ok, message }`。
-- 状态流转只允许在 `app/services` 里改，路由层不做业务判断。
+- 列表接口统一返回 `{ items, total, page, size }`，动作接口统一返回
+  `{ ok, message, entry, idempotent }`。HTTP 200 仅代表传输成功，业务拒绝时 `ok=false`
+  且 `message` 给出原因，前端不得把 200 直接当作成功。
+- 状态流转只允许在 `app/services` 里改，路由层不做业务判断。AB实验（`abtest`）与
+  ETL任务（`etljob`）由 `app/workflow.py` 的顺序状态机驱动：状态只能单步向前，终态
+  （已完成/已终止、已完成/已失败）不可再流转；相同动作的重复提交按幂等处理
+  （`idempotent=true`，不改写状态）；完成与终止并发竞争时只接受一条结论。
+- 动作请求兼容两种协议：页面顶层 `{"action": "..."}` 与历史嵌套
+  `{"values": {"action": "..."}}`；两者同时出现且取值不一致时按冲突拒绝，不随机选择。
+- AB实验与ETL任务提供 `GET /api/<模块>/<id>/ledger` 操作台账，按时间记录实际接受的动作、
+  幂等重试与每次拒绝的原因；历史数据迁移只校正派生标记，不补造台账。
 
 领域：数据工程
 子方向：数据分析与数据应用

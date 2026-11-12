@@ -33,3 +33,27 @@ body { margin: 0; background: #f6f8fb; color: #1f2937; }
 .link { border: none; background: none; color: var(--brand); cursor: pointer; padding: 0; }
 .page-foot { display: flex; justify-content: space-between; margin-top: 8px; font-size: 12px; color: var(--muted); }
 .error-text { color: #b42318; }
+
+/* 操作反馈条：HTTP 200 但业务拒绝时也要能直接看到原因 */
+.notice { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 8px 12px; border-radius: 6px; margin-bottom: 10px; font-size: 13px; border: 1px solid; }
+.notice-ok { background: #ecfdf3; border-color: #75e0a7; color: #067647; }
+.notice-error { background: #fef3f2; border-color: #fda29b; color: #b42318; }
+
+/* 状态徽标 */
+.status-badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 12px; white-space: nowrap; }
+.badge-active { background: #eff8ff; color: #175cd3; border: 1px solid #b2ddff; }
+.badge-terminal { background: #ecfdf3; color: #067647; border: 1px solid #75e0a7; }
+.badge-negative { background: #fef3f2; color: #b42318; border: 1px solid #fda29b; }
+
+/* 动作按钮：高亮当前状态真正合法的动作，其余弱化（仍可点击以观察后端拒绝原因） */
+.link.action-legal { font-weight: 600; }
+.link.action-disabled { color: #94a3b8; }
+.link:disabled { cursor: wait; opacity: 0.6; }
+
+/* 操作台账弹窗 */
+.modal-mask { position: fixed; inset: 0; background: rgba(16, 24, 40, 0.55); display: flex; align-items: center; justify-content: center; z-index: 50; padding: 24px; }
+.modal-panel { background: #fff; border-radius: 10px; width: min(960px, 100%); max-height: 82vh; overflow: auto; padding: 16px 18px; }
+.modal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.ledger-table { font-size: 12px; }
+.ledger-rejected { background: #fef3f2; }
+.ledger-idempotent { background: #eff8ff; }

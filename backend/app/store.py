@@ -14,6 +14,10 @@ class Store:
         self._tables: dict[str, list[dict[str, Any]]] = {
             name: [dict(row) for row in rows] for name, rows in SEED_ROWS.items()
         }
+        # 操作台账：module -> entry_id -> 按时间追加的动作记录（接受、幂等、拒绝都留痕）。
+        self._ledgers: dict[str, dict[int, list[dict[str, Any]]]] = {}
+        # 台账流水号：module -> entry_id -> 自增序号。
+        self._ledger_seq: dict[str, dict[int, int]] = {}
 
     def module_names(self) -> list[str]:
         return sorted(self._tables)
@@ -26,6 +30,20 @@ class Store:
             if int(row.get("id", 0)) == entry_id:
                 return row
         return None
+
+    def ledger(self, module: str, entry_id: int) -> list[dict[str, Any]]:
+        """读取一条记录的操作台账；返回副本，避免调用方直接篡改留痕。"""
+        bucket = self._ledgers.setdefault(module, {}).setdefault(entry_id, [])
+        return [dict(record) for record in bucket]
+
+    def next_ledger_id(self, module: str, entry_id: int) -> int:
+        seq = self._ledger_seq.setdefault(module, {})
+        seq[entry_id] = seq.get(entry_id, 0) + 1
+        return seq[entry_id]
+
+    def append_ledger(self, module: str, entry_id: int, record: dict[str, Any]) -> None:
+        bucket = self._ledgers.setdefault(module, {}).setdefault(entry_id, [])
+        bucket.append(dict(record))
 
     def overview(self) -> dict[str, object]:
         modules: list[dict[str, object]] = []

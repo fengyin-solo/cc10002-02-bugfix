@@ -19,11 +19,26 @@ class ActionResult(BaseModel):
     ok: bool
     message: str
     entry: dict[str, Any] | None = None
+    # True 表示命中幂等：状态本就如此，本次请求未产生变更。
+    idempotent: bool = False
 
 
 class EntryPayload(BaseModel):
     """登记或修改一条业务记录时提交的字段集合。"""
 
+    values: dict[str, Any] = Field(default_factory=dict)
+    remark: str | None = None
+
+
+class ActionPayload(BaseModel):
+    """动作请求体：同时兼容页面顶层 action 与历史嵌套 values.action 两种协议。
+
+    - 顶层：``{"action": "启动实验"}``（页面当前用法）
+    - 嵌套：``{"values": {"action": "启动实验"}}``（历史客户端用法）
+    两者都给出且不一致时由业务层判为冲突并拒绝，模型本身不做随机取舍。
+    """
+
+    action: str | None = None
     values: dict[str, Any] = Field(default_factory=dict)
     remark: str | None = None
 
